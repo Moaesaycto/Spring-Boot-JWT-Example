@@ -1,0 +1,9 @@
+server:
+  port: 8080
+logging:
+  level:
+    root: INFO
+app:
+  jwt:
+    expiry-minutes: 60
+    secret: "change-me-to-32+random-chars0000"

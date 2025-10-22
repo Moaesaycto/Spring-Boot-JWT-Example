@@ -1,6 +1,7 @@
 package dev.moae;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.*;
@@ -40,12 +41,18 @@ public class AuthController {
             .issuer("hello-web")
             .issuedAt(now)
             .expiresAt(now.plusSeconds(expiryMinutes * 60))
-            .subject(req.username())
+            .subject(req.username()) // <= This is where the user identifier is stored
             .claim("scope", "api.read api.write")
             .build();
 
     var header = JwsHeader.with(MacAlgorithm.HS256).build();
     String token = encoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();
     return Map.of("access_token", token, "token_type", "Bearer");
+  }
+
+  @GetMapping("/me")
+  public Map<String, Object> me(@AuthenticationPrincipal Jwt jwt) {
+    String userId = jwt.getSubject(); // <= Retrieving who is calling
+    return Map.of("userId", userId, "scopes", jwt.getClaimAsString("scope"));
   }
 }
